@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { Search, ChevronUp, ChevronDown } from 'lucide-react';
 import { useUserList, useDebounce, useCountries } from '../../hooks';
 import { UserListItem } from '../../schemas/apiSchemas';
@@ -33,17 +33,16 @@ const UserTableHeader: React.FC<UserTableHeaderProps> = ({ label, sortKey, curre
 
 interface UserRowProps {
   user: UserListItem;
-  onClick: (userId: string) => void;
 }
 
-const UserRow: React.FC<UserRowProps> = ({ user, onClick }) => {
+const UserRow: React.FC<UserRowProps> = ({ user }) => {
   return (
-    <tr className="hover:bg-base-200/50 transition-colors cursor-pointer" onClick={() => onClick(user.id)}>
+    <tr className="hover:bg-base-200/50 transition-colors">
       <td className="px-4 py-5">
-        <div className="flex items-center gap-4">
+        <Link to={`/user/${user.id}`} className="text-base-content hover:text-primary transition-colors flex items-center gap-4">
           <ProfileAvatar profileImageUrl={user.profileImageUrl} alias={user.alias} size="md" />
-          <span className="font-medium text-base-content text-lg">{user.alias}</span>
-        </div>
+          <span className="font-medium text-lg">{user.alias}</span>
+        </Link>
       </td>
       <td className="px-4 py-5 text-sm text-base-content/70">{user.country || ''}</td>
       <td className="px-4 py-5 text-sm text-base-content/70">{new Date(user.createdAt).toLocaleDateString()}</td>
@@ -52,7 +51,6 @@ const UserRow: React.FC<UserRowProps> = ({ user, onClick }) => {
 };
 
 export const UsersPage: React.FC = () => {
-  const navigate = useNavigate();
   const [searchInput, setSearchInput] = useState('');
   const [selectedCountryId, setSelectedCountryId] = useState<number | undefined>(undefined);
   const debouncedSearch = useDebounce(searchInput, 300);
@@ -74,10 +72,6 @@ export const UsersPage: React.FC = () => {
   const handleSort = (orderBy: string, direction: 'asc' | 'desc') => {
     setOrderBy(orderBy);
     setOrderDirection(direction);
-  };
-
-  const handleUserClick = (userId: string) => {
-    navigate(`/user/${userId}`);
   };
 
   if (error) {
@@ -225,7 +219,7 @@ export const UsersPage: React.FC = () => {
                       </td>
                     </tr>
                   ) : (
-                    users.map((user) => <UserRow key={user.id} user={user} onClick={handleUserClick} />)
+                    users.map((user) => <UserRow key={user.id} user={user} />)
                   )}
                 </tbody>
               </table>

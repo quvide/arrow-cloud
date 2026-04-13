@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { Search, ChevronUp, ChevronDown } from 'lucide-react';
 import { usePackList, useDebounce } from '../../hooks';
 import { PackListItem } from '../../schemas/apiSchemas';
@@ -59,14 +59,13 @@ const PackTableHeader: React.FC<PackTableHeaderProps> = ({ label, sortKey, curre
 interface PackRowProps {
   pack: PackListItem;
   maxPopularity: number;
-  onClick: (packId: number) => void;
 }
 
-const PackRow: React.FC<PackRowProps> = ({ pack, maxPopularity, onClick }) => {
+const PackRow: React.FC<PackRowProps> = ({ pack, maxPopularity }) => {
   return (
-    <tr className="hover:bg-base-200/50 transition-colors cursor-pointer" onClick={() => onClick(pack.id)}>
+    <tr className="hover:bg-base-200/50 transition-colors">
       <td className="px-4 py-5">
-        <div className="flex items-center gap-5">
+        <Link to={`/pack/${pack.id}`} className="text-base-content hover:text-primary transition-colors flex items-center gap-5">
           <BannerImage
             bannerVariants={pack.bannerVariants}
             mdBannerUrl={pack.mdBannerUrl}
@@ -77,8 +76,8 @@ const PackRow: React.FC<PackRowProps> = ({ pack, maxPopularity, onClick }) => {
             style={{ aspectRatio: '2.56' }}
             iconSize={24}
           />
-          <span className="font-medium text-base-content text-lg">{pack.name}</span>
-        </div>
+          <span className="font-medium text-lg">{pack.name}</span>
+        </Link>
       </td>
       <td className="px-4 py-5 text-center">
         <span className="badge badge-primary badge-outline font-medium">{pack.simfileCount}</span>
@@ -92,7 +91,6 @@ const PackRow: React.FC<PackRowProps> = ({ pack, maxPopularity, onClick }) => {
 };
 
 export const PacksPage: React.FC = () => {
-  const navigate = useNavigate();
   const [searchInput, setSearchInput] = useState('');
   const debouncedSearch = useDebounce(searchInput, 300);
   const [searchCallCounter, setSearchCallCounter] = useState(0);
@@ -115,10 +113,6 @@ export const PacksPage: React.FC = () => {
   const handleSort = (orderBy: string, direction: 'asc' | 'desc') => {
     setOrderBy(orderBy);
     setOrderDirection(direction);
-  };
-
-  const handlePackClick = (packId: number) => {
-    navigate(`/pack/${packId}`);
   };
 
   if (error) {
@@ -245,7 +239,7 @@ export const PacksPage: React.FC = () => {
                       </td>
                     </tr>
                   ) : (
-                    packs.map((pack) => <PackRow key={pack.id} pack={pack} maxPopularity={maxPopularity} onClick={handlePackClick} />)
+                    packs.map((pack) => <PackRow key={pack.id} pack={pack} maxPopularity={maxPopularity} />)
                   )}
                 </tbody>
               </table>

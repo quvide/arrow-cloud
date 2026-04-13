@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { Search, ChevronUp, ChevronDown, Filter, X } from 'lucide-react';
 import { useChartList, useDebounce } from '../../hooks';
 import { ChartListItem } from '../../schemas/apiSchemas';
@@ -34,11 +34,9 @@ const ChartTableHeader: React.FC<ChartTableHeaderProps> = ({ label, sortKey, cur
 
 interface ChartRowProps {
   chart: ChartListItem;
-  onClick: (chartHash: string) => void;
 }
 
-const ChartRow: React.FC<ChartRowProps> = ({ chart, onClick }) => {
-  const navigate = useNavigate();
+const ChartRow: React.FC<ChartRowProps> = ({ chart }) => {
   const title = chart.songName || 'Unknown Title';
   const artist = chart.artist || 'Unknown Artist';
 
@@ -48,15 +46,10 @@ const ChartRow: React.FC<ChartRowProps> = ({ chart, onClick }) => {
     .filter((pack): pack is NonNullable<typeof pack> => pack !== null)
     .filter((pack, index, self) => self.findIndex((p) => p.id === pack.id) === index);
 
-  const handlePackClick = (e: React.MouseEvent, packId: number) => {
-    e.stopPropagation(); // Prevent row click
-    navigate(`/pack/${packId}`);
-  };
-
   return (
-    <tr className="hover:bg-base-200/50 transition-colors cursor-pointer" onClick={() => onClick(chart.hash)}>
+    <tr className="hover:bg-base-200/50 transition-colors">
       <td className="px-4 py-5">
-        <div className="flex items-center gap-4">
+        <Link to={`/chart/${chart.hash}`} className="text-base-content hover:text-primary transition-colors flex items-center gap-4">
           <BannerImage
             bannerVariants={chart.bannerVariants}
             mdBannerUrl={chart.mdBannerUrl}
@@ -68,10 +61,10 @@ const ChartRow: React.FC<ChartRowProps> = ({ chart, onClick }) => {
             iconSize={16}
           />
           <div className="flex-1 min-w-0">
-            <div className="font-medium text-base-content text-lg truncate">{title}</div>
+            <div className="font-medium text-lg truncate">{title}</div>
             <div className="text-sm text-base-content/70 truncate">{artist}</div>
           </div>
-        </div>
+        </Link>
       </td>
       <td className="px-4 py-5 text-center">
         <DifficultyChip stepsType={chart.stepsType} difficulty={chart.difficulty} meter={chart.meter} size="sm" />
@@ -81,13 +74,13 @@ const ChartRow: React.FC<ChartRowProps> = ({ chart, onClick }) => {
           <div className="flex flex-wrap gap-1">
             {packs.map((pack) => (
               <div key={pack.id}>
-                <button
-                  className="link link-hover text-xs bg-base-200/50 hover:bg-base-300/50 px-2 py-1 rounded transition-colors mr-1"
-                  onClick={(e) => {
+                <Link
+                  to={`/pack/${pack.id}`}
+                  className="link link-hover inline-block text-xs text-center bg-base-200/50 hover:bg-base-300/50 px-2 py-1 rounded transition-colors mr-1"
+                  onClick={() => {
                     // Remove any existing tooltips before navigation
                     const existingTooltips = document.querySelectorAll('.pack-tooltip');
                     existingTooltips.forEach((tooltip) => tooltip.remove());
-                    handlePackClick(e, pack.id);
                   }}
                   onMouseEnter={(e) => {
                     if (pack.bannerUrl) {
@@ -120,7 +113,7 @@ const ChartRow: React.FC<ChartRowProps> = ({ chart, onClick }) => {
                   }}
                 >
                   {pack.name}
-                </button>
+                </Link>
               </div>
             ))}
           </div>
@@ -187,7 +180,6 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ stepsType, difficulty, onStep
 };
 
 export const ChartsPage: React.FC = () => {
-  const navigate = useNavigate();
   const [searchInput, setSearchInput] = useState('');
   const debouncedSearch = useDebounce(searchInput, 300);
   const [searchCallCounter, setSearchCallCounter] = useState(0);
@@ -209,10 +201,6 @@ export const ChartsPage: React.FC = () => {
   const handleSort = (orderBy: string, direction: 'asc' | 'desc') => {
     setOrderBy(orderBy);
     setOrderDirection(direction);
-  };
-
-  const handleChartClick = (chartHash: string) => {
-    navigate(`/chart/${chartHash}`);
   };
 
   const handleClearFilters = () => {
@@ -378,7 +366,7 @@ export const ChartsPage: React.FC = () => {
                       </td>
                     </tr>
                   ) : (
-                    charts.map((chart) => <ChartRow key={chart.hash} chart={chart} onClick={handleChartClick} />)
+                    charts.map((chart) => <ChartRow key={chart.hash} chart={chart} />)
                   )}
                 </tbody>
               </table>
